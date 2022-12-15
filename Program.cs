@@ -2,7 +2,19 @@
 using ValidationFramework.Models;
 using ValidationFramework.Validations;
 
+var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(MyAllowSpecificOrigins,
+                      policy =>
+                      {
+                          policy.WithOrigins("*").AllowAnyMethod().AllowAnyHeader();
+                      });
+});
+
 var app = builder.Build();
 
 app.MapGet("/", () => "Hello, this is Validation Framework!");
@@ -25,16 +37,16 @@ app.MapPost("/api", (User user) =>
         switch (violation.getProperty())
         {
             case "Email":
-                notifications["email"] += violation.getMessage() + ", ";
+                notifications["email"] += violation.getMessage() + "|";
                 break;
             case "Password":
-                notifications["password"] += violation.getMessage() + ", ";
+                notifications["password"] += violation.getMessage() + "|";
                 break;
             case "Phone":
-                notifications["phone"] += violation.getMessage() + ", ";
+                notifications["phone"] += violation.getMessage() + "|";
                 break;
             case "DoB":
-                notifications["dob"] += violation.getMessage() + ", ";
+                notifications["dob"] += violation.getMessage() + "|";
                 break;
         }
 
@@ -43,5 +55,7 @@ app.MapPost("/api", (User user) =>
 
     return Results.Ok(notifications);
 });
+
+app.UseCors(MyAllowSpecificOrigins);
 
 app.Run();
